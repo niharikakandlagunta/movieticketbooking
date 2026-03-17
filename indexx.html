@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cinema Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:url("https://newsmeter.in/h-upload/2022/01/11/312997-new-project-2022-01-11t081622135.jpg") center/cover no-repeat fixed;color:white;}
+body::before{content:"";position:fixed;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:-1;}
+
+/* HEADER */
+header{background:rgba(0,0,0,0.9);padding:15px;text-align:center;position:sticky;top:0;z-index:10;}
+header h1{font-family:'Playfair Display',serif;font-size:34px;color:#ffd166;margin-bottom:10px;animation:fadeGlow 2s infinite alternate;}
+nav{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;}
+nav button{padding:8px 18px;border-radius:20px;border:none;background:rgba(255,255,255,0.1);color:white;cursor:pointer;transition:0.3s;}
+nav button:hover{background:#ff416c;transform:scale(1.1);} 
+
+@keyframes fadeGlow{from{opacity:0.7;text-shadow:0 0 5px #ff416c;}to{opacity:1;text-shadow:0 0 20px #ff416c;}}
+
+.page{display:none;padding:40px;text-align:center;}
+.page h2{font-family:'Playfair Display',serif;color:#ff9f1c;margin-bottom:15px;}
+.active{display:block;}
+
+.login-box{max-width:350px;margin:auto;background:rgba(0,0,0,0.7);padding:30px;border-radius:10px;}
+input,select{width:260px;padding:10px;margin:10px auto;display:block;border:none;border-radius:6px;}
+button.main{background:linear-gradient(45deg,#ff416c,#ff4b2b);border:none;color:white;padding:10px;width:220px;border-radius:6px;cursor:pointer;}
+
+.movies{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:30px;}
+.movie{background:rgba(255,255,255,0.1);padding:15px;border-radius:10px;transition:0.3s;}
+.movie:hover{transform:scale(1.05);box-shadow:0 0 15px #ff416c;}
+.movie img{width:100%;height:250px;object-fit:cover;border-radius:8px;margin-bottom:10px;}
+
+.desc-box{max-width:600px;margin:auto;padding:25px;background:rgba(255,255,255,0.1);border-radius:12px;}
+
+.screen{background:white;color:black;width:300px;margin:auto;padding:8px;margin-bottom:20px;border-radius:4px;}
+.seat-container{display:grid;grid-template-columns:repeat(8,40px);gap:10px;justify-content:center;}
+.seat{width:40px;height:40px;background:#28a745;border-radius:5px;cursor:pointer;}
+.seat.selected{background:#ffc107;} 
+.seat.booked{background:#555;cursor:not-allowed;}
+
+.ticket-card{background:rgba(0,0,0,0.9);padding:30px;max-width:420px;margin:auto;border-radius:10px;border:2px dashed #ff416c;}
+</style>
+</head>
+
+<body>
+<header>
+<h1>🎬 CinemaBook</h1>
+<nav>
+<button onclick="show('homePage')">🏠 Home</button>
+<button onclick="show('aboutPage')">ℹ️ About</button>
+<button onclick="show('contactPage')">📞 Contact</button>
+<button onclick="show('login')">🔐 Login</button>
+<button onclick="showHistory()">📜 History</button>
+</nav>
+</header>
+
+<!-- HOME -->
+<div id="homePage" class="page active">
+<h2 style="font-family:'Playfair Display',serif;font-size:36px;color:#ffd166;">Welcome to CinemaBook</h2>
+<p style="font-size:20px;color:#f1f1f1;margin-top:10px;">Experience movies like never before 🎬✨</p>
+</div>
+
+<!-- ABOUT -->
+<div id="aboutPage" class="page">
+<h2>About</h2>
+<p style="max-width:700px;margin:auto;font-size:18px;line-height:1.7;font-family:'Playfair Display',serif;color:#f5f5f5;">
+CinemaBook is a modern movie ticket booking web application designed to provide a smooth and engaging user experience. 
+Users can explore movies, choose their preferred language and show timings, select seats visually, and generate tickets instantly.
+<br><br>
+This project demonstrates key web development concepts such as dynamic page navigation, responsive UI design, and client-side data storage using LocalStorage.
+<br><br>
+Our goal is to make movie booking simple, fast, and enjoyable for everyone 🎬
+</p>
+</div>
+
+<!-- CONTACT -->
+<div id="contactPage" class="page">
+<h2 style="font-family:'Playfair Display',serif;font-size:32px;color:#ffd166;">Contact Us</h2>
+<p style="font-size:18px;margin-top:10px;">📧 Email: support@cinemabook.com</p>
+<p style="font-size:18px;">📞 Phone: +91 9876543210</p>
+<p style="font-size:18px;">📍 Location: India</p>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="page">
+<div class="login-box">
+<h2>Create Account</h2>
+<input id="newUser" placeholder="Username">
+<input id="newPass" type="password" placeholder="Password">
+<button class="main" onclick="signup()">Sign Up</button>
+<p onclick="show('login')" style="cursor:pointer;color:#ccc;">Already have account?</p>
+</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="page">
+<div class="login-box">
+<h2>Login</h2>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button class="main" onclick="login()">Login</button>
+<p onclick="show('signup')" style="cursor:pointer;color:#ccc;">Create account</p>
+</div>
+</div>
+
+<!-- REGION -->
+<div id="region" class="page">
+<h2>Select Your State</h2>
+<select>
+<option>Andhra Pradesh</option>
+<option>Telangana</option>
+<option>Tamil Nadu</option>
+<option>Karnataka</option>
+<option>Kerala</option>
+<option>Maharashtra</option>
+</select>
+<button class="main" onclick="goMovies()">Continue</button>
+</div>
+
+<!-- MOVIES -->
+<div id="moviesPage" class="page">
+<h2>Recommended Movies</h2>
+<div class="movies" style="grid-template-columns:repeat(4,1fr);">
+
+<div class="movie"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvwq0G7pzGgLZEOhnaXkpqHHFoxFdAUW_f5Q&s"><h3>Pushpa 2</h3><button class="main" onclick="selectMovie('Pushpa 2',200,'Rise of Pushpa empire.')">Select</button></div>
+<div class="movie"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d7/RRR_Poster.jpg/250px-RRR_Poster.jpg"><h3>RRR</h3><button class="main" onclick="selectMovie('RRR',180,'Revolution story.')">Select</button></div>
+<div class="movie"><img src="https://miro.medium.com/1*ykDwvSe4XWummtBWetoxBw.jpeg"><h3>Salaar</h3><button class="main" onclick="selectMovie('Salaar',220,'Action entertainer.')">Select</button></div>
+<div class="movie"><img src="https://m.media-amazon.com/images/M/MV5BMGRjZTQ0YzUtYWJjMS00OGY1LTkwNjMtYjYwZmFmNTY3MGZkXkEyXkFqcGc@._V1_.jpg"><h3>Kalki</h3><button class="main" onclick="selectMovie('Kalki',250,'Sci-fi world.')">Select</button></div>
+
+<div class="movie"><img src="https://m.media-amazon.com/images/S/pv-target-images/ef222e4c367082c8f94315fbf5b62d350547c5e2589a97f12d5414979c64a9fc.jpg"><h3>KGF 2</h3><button class="main" onclick="selectMovie('KGF 2',230,'Gold empire story.')">Select</button></div>
+<div class="movie"><img src="https://m.media-amazon.com/images/M/MV5BZjg1MjJmODYtNmM4ZC00MmIwLTkxMDEtZDRhMjc3NTc3NzgyXkEyXkFqcGc@._V1_.jpg"><h3>Leo</h3><button class="main" onclick="selectMovie('Leo',210,'Stylish thriller.')">Select</button></div>
+<div class="movie"><img src="https://c.saavncdn.com/187/Jailer-Tamil-2023-20230728081443-500x500.jpg"><h3>Jailer</h3><button class="main" onclick="selectMovie('Jailer',190,'Mass action drama.')">Select</button></div>
+<div class="movie"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw6YF73EduwwRT3U5M1VU9ZAacDe0zvA9Z1g&s"><h3>Avengers</h3><button class="main" onclick="selectMovie('Avengers',300,'Superhero action.')">Select</button></div>
+
+</div>
+</div>
+</div>
+</div>
+
+<!-- LANGUAGE -->
+<div id="language" class="page">
+<h2>Select Language</h2>
+<select id="lang">
+<option>Telugu</option>
+<option>Hindi</option>
+<option>English</option>
+<option>Tamil</option>
+</select>
+<button class="main" onclick="showDescription()">Next</button>
+</div>
+
+<!-- DESCRIPTION -->
+<div id="desc" class="page">
+<div class="desc-box">
+<h2>Movie Description</h2>
+<p id="descText"></p>
+</div>
+<button class="main" onclick="goShowtime()">Continue</button>
+</div>
+
+<!-- SHOWTIME -->
+<div id="showtime" class="page">
+<h2>Select Time</h2>
+<select id="time">
+<option>10:00 AM</option>
+<option>1:30 PM</option>
+<option>5:00 PM</option>
+<option>9:30 PM</option>
+</select>
+<button class="main" onclick="goSeats()">Continue</button>
+</div>
+
+<!-- SEATS -->
+<div id="seats" class="page">
+<h2>Select Seats</h2>
+<div class="screen">SCREEN</div>
+<div class="seat-container" id="seatArea"></div>
+<p>Seats: <span id="count">0</span></p>
+<p>Total: ₹<span id="total">0</span></p>
+<button class="main" onclick="goPayment()">Proceed</button>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" class="page">
+<div class="login-box">
+<h2>Select Payment Method</h2>
+<select id="payMethod">
+<option>UPI</option>
+<option>Debit Card</option>
+<option>Credit Card</option>
+<option>Net Banking</option>
+</select>
+<br>
+<button class="main" onclick="confirmBooking()">Pay Now</button>
+</div>
+</div>
+</div>
+
+<!-- THANK YOU -->
+<div id="thankyou" class="page">
+<div class="ticket-card">
+<h2>🎉 Thank You!</h2>
+<p>Enjoy your movie 🍿</p>
+<p>Rate our Website:</p>
+<select>
+<option>⭐</option>
+<option>⭐⭐</option>
+<option>⭐⭐⭐</option>
+<option>⭐⭐⭐⭐</option>
+<option>⭐⭐⭐⭐⭐</option>
+</select>
+<button class="main" onclick="show('ticket')">View Ticket</button>
+</div>
+</div>
+
+<!-- TICKET -->
+<div id="ticket" class="page">
+<div class="ticket-card">
+<h2>🎟 Ticket</h2>
+<p id="details"></p>
+</div>
+</div>
+
+<script>
+let movie="",price=0,seats=[],showTime="",desc="";
+
+function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function signup(){
+let u=newUser.value,p=newPass.value;
+if(u==""||p==""){alert("Fill details");return;}
+localStorage.setItem("user",u);
+localStorage.setItem("pass",p);
+alert("Account created");
+show('login');
+}
+
+function login(){
+if(username.value===localStorage.getItem("user") && password.value===localStorage.getItem("pass")){
+show('region');
+}else{alert("Invalid login");}
+}
+
+function goMovies(){show('moviesPage');}
+function selectMovie(n,p,d){movie=n;price=p;desc=d;show('language');}
+function showDescription(){descText.innerText=desc;show('desc');}
+function goShowtime(){show('showtime');}
+function goSeats(){showTime=time.value;show('seats');}
+
+const area=document.getElementById('seatArea');
+for(let i=1;i<=40;i++){let s=document.createElement('div');s.classList.add('seat');if(Math.random()<0.2)s.classList.add('booked');s.onclick=function(){if(!s.classList.contains('booked')){s.classList.toggle('selected');let seat='S'+i;if(s.classList.contains('selected')){if(!seats.includes(seat))seats.push(seat);}else{seats=seats.filter(x=>x!==seat);}update();}};area.appendChild(s);} 
+
+function update(){count.innerText=seats.length;total.innerText=seats.length*price;}
+function goPayment(){if(seats.length==0){alert('Select seats');return;}show('payment');}
+function confirmBooking(){details.innerHTML=`Movie: ${movie}<br>Time: ${showTime}<br>Seats: ${seats.join(',')}<br>Total: ₹${seats.length*price}`;show('thankyou');}
+// SAVE BOOKING HISTORY
+function confirmBooking(){
+let booking = {
+movie: movie,
+time: showTime,
+seats: seats.join(','),
+total: seats.length*price
+};
+
+let history = JSON.parse(localStorage.getItem("history")) || [];
+history.push(booking);
+localStorage.setItem("history", JSON.stringify(history));
+
+// show ticket
+details.innerHTML=`Movie: ${movie}<br>Time: ${showTime}<br>Seats: ${seats.join(',')}<br>Total: ₹${seats.length*price}`;
+show('thankyou');
+}
+
+// SHOW HISTORY PAGE
+function showHistory(){
+let history = JSON.parse(localStorage.getItem("history")) || [];
+let output = "";
+
+history.forEach((b,i)=>{
+output += `Booking ${i+1}:<br>Movie: ${b.movie}<br>Time: ${b.time}<br>Seats: ${b.seats}<br>Total: ₹${b.total}<br><br>`;
+});
+
+document.getElementById("historyData").innerHTML = output || "No bookings yet";
+show('historyPage');
+}
+</script>
+
+<!-- HISTORY PAGE -->
+<div id="historyPage" class="page">
+<h2>Your Booking History</h2>
+<p id="historyData"></p>
+</div>
+
+</body>
+</html>
